@@ -1,0 +1,3 @@
+[submodule "mi_card_flutter"]
+	path = mi_card_flutter
+	url = https://github.com/dhruvarora91/learning-flutter.git
