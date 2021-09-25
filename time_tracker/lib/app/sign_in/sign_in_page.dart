@@ -10,9 +10,18 @@ class SignInPage extends StatelessWidget {
     Key? key,
     required this.auth,
   }) : super(key: key);
+
   Future<void> _signInAnonymously() async {
     try {
       await auth.signInAnonymously();
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    try {
+      await auth.signInWithGoogle();
     } catch (e) {
       print(e.toString());
     }
@@ -54,7 +63,7 @@ class SignInPage extends StatelessWidget {
             textColor: Colors.black87,
             color: Colors.white,
             assetName: 'images/google-logo.png',
-            onPressed: () {},
+            onPressed: _signInWithGoogle,
           ),
           SizedBox(height: 8),
           SocialSignInButton(
