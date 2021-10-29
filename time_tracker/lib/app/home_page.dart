@@ -8,6 +8,7 @@ class HomePage extends StatelessWidget {
     Key? key,
     required this.auth,
   }) : super(key: key);
+
   Future<void> _signOut() async {
     try {
       await auth.signOut();
