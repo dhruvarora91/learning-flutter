@@ -1,8 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:time_tracker/common_widgets/form_submit_button.dart';
-import 'package:time_tracker/common_widgets/show_alert_dialog.dart';
+import 'package:time_tracker/common_widgets/show_exception_alert_dialog.dart';
 import 'package:time_tracker/services/auth.dart';
 
 enum EmailSignInFormType { signIn, register }
@@ -26,6 +27,15 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
 
   bool _isLoading = false;
 
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    super.dispose();
+  }
+
   void _submit() async {
     setState(() {
       _isLoading = true;
@@ -38,12 +48,11 @@ class _EmailSignInFormState extends State<EmailSignInForm> {
         await auth.createUserWithEmailAndPassword(_email, _password);
       }
       Navigator.pop(context);
-    } catch (e) {
-      showAlertDialog(
-        context: context,
+    } on FirebaseAuthException catch (e) {
+      showExceptionAlertDialog(
+        context,
         title: 'Sign in Failed',
-        content: e.toString(),
-        defaultActionText: 'Ok',
+        exception: e,
       );
     } finally {
       _isLoading = false;
