@@ -1,18 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:time_tracker/app/sign_in/email_sign_in_page.dart';
+import 'package:time_tracker/app/sign_in/sign_in_bloc.dart';
 import 'package:time_tracker/app/sign_in/sign_in_button.dart';
 import 'package:time_tracker/app/sign_in/social_sign_in_button.dart';
 import 'package:time_tracker/common_widgets/show_exception_alert_dialog.dart';
 import 'package:time_tracker/services/auth.dart';
 
-class SignInPage extends StatefulWidget {
-  @override
-  State<SignInPage> createState() => _SignInPageState();
-}
+class SignInPage extends StatelessWidget {
+  const SignInPage({Key? key, required this.bloc}) : super(key: key);
+  final SignInBloc bloc;
 
-class _SignInPageState extends State<SignInPage> {
-  bool _isLoading = false;
+  static Widget create(BuildContext context) {
+    final auth = Provider.of<AuthBase>(context, listen: false);
+    return Provider<SignInBloc>(
+      create: (_) => SignInBloc(auth: auth),
+      dispose: (_, bloc) => bloc.dispose(),
+      child: Consumer<SignInBloc>(
+        builder: (_, bloc, __) => SignInPage(
+          bloc: bloc,
+        ),
+      ),
+    );
+  }
+
   void _showSignInError({
     required BuildContext context,
     required Exception exception,
@@ -26,39 +37,34 @@ class _SignInPageState extends State<SignInPage> {
 
   Future<void> _signInAnonymously(BuildContext context) async {
     try {
-      setState(() {
-        _isLoading = true;
-      });
-      final auth = Provider.of<AuthBase>(context, listen: false);
-      await auth.signInAnonymously();
+      // setState(() {
+      //   _isLoading = true;
+      // });
+      // bloc.setIsLoading(true);
+      // final auth = Provider.of<AuthBase>(context, listen: false);
+      // await auth.signInAnonymously();
+      await bloc.signInAnonymously();
     } on Exception catch (e) {
       _showSignInError(
         context: context,
         exception: e,
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      // } finally {
+      // setState(() {
+      //   _isLoading = false;
+      // });
+      // bloc.setIsLoading(false);
     }
   }
 
   Future<void> _signInWithGoogle(BuildContext context) async {
     try {
-      setState(() {
-        _isLoading = true;
-      });
-      final auth = Provider.of<AuthBase>(context, listen: false);
-      await auth.signInWithGoogle();
+      await bloc.signInWithGoogle();
     } on Exception catch (e) {
       _showSignInError(
         context: context,
         exception: e,
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -82,11 +88,16 @@ class _SignInPageState extends State<SignInPage> {
         ),
         elevation: 2,
       ),
-      body: _buildContent(context),
+      body: StreamBuilder<bool>(
+          stream: bloc.isLoadingStream,
+          builder: (context, snapshot) {
+            print(snapshot.data);
+            return _buildContent(context, snapshot.data ?? false);
+          }),
     );
   }
 
-  Widget _buildContent(BuildContext context) {
+  Widget _buildContent(BuildContext context, bool? isLoading) {
     return Padding(
       padding: EdgeInsets.all(16),
       child: Column(
@@ -95,7 +106,7 @@ class _SignInPageState extends State<SignInPage> {
         children: [
           SizedBox(
             height: 50,
-            child: _isLoading
+            child: isLoading!
                 ? Center(
                     child: CircularProgressIndicator(),
                   )
